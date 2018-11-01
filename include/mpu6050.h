@@ -112,7 +112,18 @@
 #define MPU6050_FIFO_R_W            0x74
 #define MPU6050_WHO_AM_I            0x75
 
+struct mpu6050_raw_data {
+    int16_t acc_x;
+    int16_t acc_y;
+    int16_t acc_z;
+    int16_t temp;
+    int16_t gyro_x;
+    int16_t gyro_y;
+    int16_t gyro_z;
+} __attribute__((packed));
+
 void mpu6050_init();
 void mpu6050_start_loc();
+void mpu6050_read_raw_data(struct mpu6050_raw_data *data);
 
 #endif /* ! _MPU6050_H */

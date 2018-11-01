@@ -1,9 +1,14 @@
 #include <SPI.h>
 
-volatile uint8_t process = 0;
-byte i = 0, variable = 0;
-int8_t c;
-int16_t x;
+struct mpu6050_raw_data {
+    int16_t acc_x;
+    int16_t acc_y;
+    int16_t acc_z;
+    int16_t temp;
+    int16_t gyro_x;
+    int16_t gyro_y;
+    int16_t gyro_z;
+} __attribute__((packed));
 
 void setup(void) {
     Serial.begin(115200);
@@ -15,10 +20,8 @@ void setup(void) {
     /* turn on SPI in slave mode */
     SPCR |= _BV(SPE);
 
-    process = 0;
-
     /* turn on interrupt */
-    SPI.attachInterrupt(); 
+    //SPI.attachInterrupt(); 
 }
 
 /* SPI interrupt routine */
@@ -29,49 +32,26 @@ ISR(SPI_STC_vect) {
 }
 
 void loop(void) {
-    if (process == (uint8_t) 1U) {
-       x = c;
-       x <<= 8;
-    } else if (process == (uint8_t) 2U) {
-        process = 0;
-        x = x | c;
-        
-        switch (variable) {
-        case 0:
-            variable++;
-            Serial.print("\nAccX = ");
-            Serial.print(x);
-            break;
-        case 1:
-            variable++;
-            Serial.print("  AccY = ");
-            Serial.print(x);
-            break;
-        case 2:
-            variable++;
-            Serial.print("  AccZ = ");
-            Serial.print(x);
-            break;
-        case 3:
-            variable++;
-            Serial.print("  Temp = ");
-            Serial.print(x);
-            break;
-        case 4:
-            variable++;
-            Serial.print("  GyroX = ");
-            Serial.print(x);
-            break;
-        case 5:
-            variable++;
-            Serial.print("  GyroY = ");
-            Serial.print(x);
-            break;
-        case 6:
-            Serial.print("  GyroZ = ");
-            Serial.print(x);
-            variable = 0;
-            break;
-        }
+    struct mpu6050_raw_data data;
+    size_t len = sizeof(data);
+    uint8_t *p = (uint8_t *) &data;
+
+    while (len--) {
+        *(p++) = SPI.transfer(0);
     }
+
+    Serial.print("\nAccX = ");
+    Serial.print(data.acc_x);
+    Serial.print("  AccY = ");
+    Serial.print(data.acc_y);
+    Serial.print("  AccZ = ");
+    Serial.print(data.acc_z);
+    Serial.print("  Temp = ");
+    Serial.print(data.temp);
+    Serial.print("  GyroX = ");
+    Serial.print(data.gyro_x);
+    Serial.print("  GyroY = ");
+    Serial.print(data.gyro_y);
+    Serial.print("  GyroZ = ");
+    Serial.print(data.gyro_z);
 }

@@ -6,27 +6,6 @@
 #include <i2c_master.h>
 #include <spi.h>
 #include <mpu6050.h>
-#include <context.h>
-
-void read_raw_values(struct ctx *ctx)
-{
-    mpu6050_start_loc();
-    ctx->acc_x_1  = i2c_read_ack();
-    ctx->acc_x_2  = i2c_read_ack();
-    ctx->acc_y_1  = i2c_read_ack();
-    ctx->acc_y_2  = i2c_read_ack();
-    ctx->acc_z_1  = i2c_read_ack(); 
-    ctx->acc_z_2  = i2c_read_ack();
-    ctx->temp_1   = i2c_read_ack();
-    ctx->temp_2   = i2c_read_ack();
-    ctx->gyro_x_1 = i2c_read_ack();
-    ctx->gyro_x_2 = i2c_read_ack();
-    ctx->gyro_y_1 = i2c_read_ack();
-    ctx->gyro_y_2 = i2c_read_ack();
-    ctx->gyro_z_1 = i2c_read_ack();
-    ctx->gyro_z_2 = i2c_read_nack();    
-    i2c_stop();
-}
 
 int main(void)
 {
@@ -35,9 +14,9 @@ int main(void)
     spi_init_master();
 
     for (;;) {
-        struct ctx ctx;
-        read_raw_values(&ctx);
-        spi_send_context(&ctx);
+        struct mpu6050_raw_data data;
+        mpu6050_read_raw_data(&data);
+        spi_send_data(&data, sizeof(data));
     }
 
     return 0;
